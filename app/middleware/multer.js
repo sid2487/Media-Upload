@@ -12,8 +12,8 @@ export const upload = multer({ storage, fileFilter});
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
-    const allowedTyped = ["image/", "video/", "application/pdf"];
-    if(allowedTyped.some(type => file.mimetype.startswith(type) || file.mimetype == type )) {
+    const allowedTypes = ["image/", "video/", "application/pdf"];
+    if(allowedTypes.some(type => file.mimetype.startsWith(type) || file.mimetype == type )) {
         cb(null, true);
     } else{
         cb(new Error("Olny image, videos and pdf files are allowed!"), false);
