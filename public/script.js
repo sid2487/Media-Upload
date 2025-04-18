@@ -44,6 +44,8 @@ async function loadMedia() {
             gallery.innerHTML = ""; // clear old content
 
             data.data.forEach((media) => {
+                const deleteButton = `<button onclick="deleteMedia('${media._id}')" style="margin-top: 5px; background-color: red; color: white; padding: 5px; border: none; cursor: pointer;">Delete</button>`;
+
                 const el =
                     media.resource_type === "image"
                         ? `<img src="${media.url}" width="200" />`
@@ -51,7 +53,7 @@ async function loadMedia() {
                             ? `<video src="${media.url}" width="250" controls></video>`
                             : `<a href="${media.url}" target="_blank">${media.url}</a>`;
 
-                gallery.innerHTML += `<div style="margin: 10px;">${el}</div>`;
+                gallery.innerHTML += `<div style="margin: 10px;">${el}<br/>${deleteButton}</div>`;
             });
         } else {
             gallery.innerHTML = `<p>Error loading media: ${data.message}</p>`;
@@ -61,6 +63,75 @@ async function loadMedia() {
         gallery.innerHTML = "<p>Failed to load media. Please try again.</p>";
     }
 }
+
+async function deleteMedia (id) {
+    const confirmDelete = confirm("Are you sure you want to delete this media?")
+    if(!confirmDelete) return;
+
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/upload/${id}`, {
+            method: "DELETE",
+        });
+
+        const data = await res.json();
+
+        if(data.success) {
+            alert("Media deleted successfully!")
+            await loadMedia(); // reload the gallery
+        } else {
+            alert(`Error: ${data.message}`);
+        }
+    } catch (error) {
+        console.error("Delete failed:", error);
+        alert("Failed to delete media. Please try again.");
+    }
+}
+
+
+
+
+// async function loadMedia() {
+//     try {
+//         gallery.innerHTML = "<p>Loading gallery....</p>";
+        
+//         const res = await fetch(`${BACKEND_URL}/api/upload`);
+//         const data = await res.json();
+
+//         if(data.success){
+//             gallery.innerHTML = "";
+
+//             data.data.forEach((media) => {
+//                 let el;
+
+//                 if(media.resource_type === "imagae") {
+//                     el = `<img src="${media.url}" width="200" />`;
+//                 } else if(media.resource_type === "video") {
+//                     el = `<video src="${media.url}" width="250" controls></video>`;
+//                 } else if(media.resource_type === "raw" && media.url.endsWith(".pdf")) {
+//                     // handle pdf docs
+//                     const fileName = media.url.split("/").pop();
+//                     el = `
+//                         <div style="display: flex; flex-direction: column; align-items: flex-start;">
+//                             <span>📄 <strong>${fileName}</strong></span>
+//                             <a href="${media.url}" target="_blank" style="color: blue;">View / Download PDF</a>
+//                         </div>
+//                     `
+//                 } else {
+//                     // in case of unknown or unsupported file type
+//                     el = `<p>Unsupported file type: ${media.resource_type}</p>`;
+//                 }
+
+//                 gallery.innerHTML += `<div style="margin: 10px;">${el}</div>`;
+//             });
+//         } else {
+//             gallery.innerHTML = `<p>Error loading media: ${data.message}</p>`;
+//         }
+//     } catch (error) {
+//         console.error("Error loading media:", error);
+//         gallery.innerHTML = "<p>Failed to load media. Please try again.</p>";
+//     }
+// }
+
 
 window.onload = loadMedia;
 

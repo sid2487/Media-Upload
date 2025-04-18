@@ -8,7 +8,7 @@ export const uploadMedia = async (req, res) => {
 
         if(!file) return error(res, "No file uploaded", 400);
 
-        // upload stream function using buffer(accept raw file data->upload it to cloudinary->returns the result(secure_url,public_id))
+        //  (accept raw file data(buffer)->upload it to cloudinary using upload_stream->returns the result(secure_url,public_id))
 
         const streamUpload = (fileBuffer) => {
             return new Promise((resolve, reject) => {
@@ -54,6 +54,28 @@ export const getAllMedia = async (req, res) => {
     }
 }
 
+// delete media
+export const deleteMedia = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const media = await Media.findById(id);
+        if(!media) return error(res, "Media not found");
+
+        // delete from cloudinary
+        await cloudinary.uploader.destroy(media.public_id, {
+            resource_type: media.resource_type === "video" ? "video" : "image"
+        });
+
+        // delete from mongodb
+        await Media.findByIdAndDelete(id);
+
+        success(res, "Media deleted successfully");
+    } catch (err) {
+        console.error("Delete error", err);
+        error(res, err.message || "Error deleting media");
+    }
+};
 
 
 
